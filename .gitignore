@@ -32,5 +32,5 @@ replay_pid*
 # Maven
 .mvn/
 target/
-!src/main/resources/
+!src/main/
 !src/test/resources/
