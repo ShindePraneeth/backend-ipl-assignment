@@ -1,0 +1,4 @@
+com\indium\iplassignment\IplAssignmentApplicationTests.class
+com\indium\iplassignment\MatchControllerUnitTest.class
+com\indium\iplassignment\MatchControllerIntegrationTest.class
+com\indium\iplassignment\MatchServiceUnitTest.class

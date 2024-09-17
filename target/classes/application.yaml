@@ -1,21 +1,15 @@
 spring:
   application:
     name: ipl-assignment
-
+  security:
+#    user:
+#      name: praneeth
+#      password: Praneeth@123
   datasource:
     url: jdbc:mysql://localhost:3306/ipl
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
-#  jackson:
-#    serialization:
-#      indent_output: true
-
   servlet:
     multipart:
       enabled: true
@@ -37,9 +31,12 @@ spring:
       SASL_MECHANISM: PLAIN
     producer:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
 server:
   port: 5000
-
 
 

@@ -51,23 +51,18 @@ public class MatchControllerIntegrationTest {
     @BeforeEach
     public void setup() throws JsonProcessingException {
         // Mock the service behavior instead of adding real data
-        // Mock the ObjectMapper reading a file
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode mockMatchData = objectMapper.readTree("{ \"matchNumber\": 100, \"team1\": \"Team A\", \"team2\": \"Team B\" }");
 
-        // Mock behavior for successful match data saving
         Mockito.when(matchService.saveMatchData(Mockito.any(JsonNode.class))).thenReturn(true);
 
-        // Mock behavior when match data already exists
         Mockito.when(matchService.saveMatchData(Mockito.eq(mockMatchData))).thenReturn(false);
         Mockito.when(matchService.getMatchEventsByPlayerName("Sachin Tendulkar"))
                 .thenReturn(Collections.singletonList(Map.of("match", "Match 1", "score", "100")));
 
-        // Mock the behavior for getWicketsByBowler
         Mockito.when(matchService.getWicketsByBowler("Anil Kumble"))
                 .thenReturn(Collections.singletonList(Map.of("match", "Match 2", "wickets", 5)));
 
-        // Mock the behavior for getCumulativeScoreByBatter
         Mockito.when(matchService.getCumulativeScoreByBatter("Rahul Dravid"))
                 .thenReturn(500);
         Mockito.when(matchService.getMatchEventsByPlayerName("Sachin Tendulkar"))
@@ -84,7 +79,6 @@ public class MatchControllerIntegrationTest {
 
         List<Official> mockOfficials = List.of(official1, official2);
 
-        // Mock the service call
         Mockito.when(matchService.getMatchRefereesByMatchNumber(100L))
                 .thenReturn(mockOfficials);
 
@@ -115,7 +109,6 @@ public class MatchControllerIntegrationTest {
 
         List<Player> mockPlayers = List.of(player1, player2);
 
-        // Mock the service behavior for this specific team and match
         Mockito.when(matchService.getPlayersByTeamAndMatch("Team A", 1))
                 .thenReturn(mockPlayers);
         Mockito.when(matchService.getPlayersByTeamAndMatch("Team B", 2))
@@ -132,7 +125,6 @@ public class MatchControllerIntegrationTest {
 
         List<Map<String, Object>> mockScores = List.of(inningScore1, inningScore2);
 
-        // Mocking the behavior of the matchService for the specific date
         LocalDate matchDate = LocalDate.of(2024, 9, 14);
         Mockito.when(matchService.getInningScoresByDate(matchDate))
                 .thenReturn(mockScores);
@@ -141,21 +133,17 @@ public class MatchControllerIntegrationTest {
     public void testUploadMatchDataSuccess() throws Exception {
         String url = "http://localhost:" + port + "/api/matches/upload";
 
-        // Create a mock file to upload
         ClassPathResource fileResource = new ClassPathResource("test-match-data.json");
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", fileResource);
 
-        // Set the headers for multipart/form-data
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-        // Call the API
         ResponseEntity<String> response = testRestTemplate.postForEntity(url, requestEntity, String.class);
 
-        // Assert that the response is OK and the message is as expected
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("Match data uploaded and saved successfully"));
     }

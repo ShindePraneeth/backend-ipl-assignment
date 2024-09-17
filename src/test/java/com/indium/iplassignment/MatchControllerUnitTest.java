@@ -28,7 +28,7 @@ public class MatchControllerUnitTest {
     private MatchService matchService;
 
     @MockBean
-    private KafkaTemplate<String, String> kafkaTemplate;  // Mock KafkaTemplate
+    private KafkaTemplate<String, String> kafkaTemplate;
     @Test
     public void testUploadMatchDataSuccess() throws Exception {
         MockMultipartFile file = new MockMultipartFile("file", "matches.json", "application/json", "{\"matchId\":1}".getBytes());

@@ -50,7 +50,6 @@ class MatchServiceUnitTest {
     @Test
     @Transactional
     void testSaveMatchData_NewMatch_Success() throws Exception {
-        // Prepare the JSON data with two teams and players
         String jsonString = "{\"info\":{\"event\":{\"match_number\":1,\"name\":\"IPL 2023\"},"
                 + "\"match_type\":\"T20\",\"city\":\"Mumbai\",\"venue\":\"Wankhede Stadium\","
                 + "\"toss\":{\"winner\":\"Team A\",\"decision\":\"bat\"},"
@@ -62,16 +61,12 @@ class MatchServiceUnitTest {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode matchData = objectMapper.readTree(jsonString);
 
-        // Mock repository behavior
         when(matchRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        // Execute the service method
         boolean result = matchService.saveMatchData(matchData);
 
-        // Assert the result
         assertTrue(result);
 
-        // Verify repositories interactions
         verify(matchRepository, times(1)).save(any(Match.class)); // Ensure match was saved
         verify(teamRepository, times(1)).saveAll(anyList()); // Ensure teams were saved once
         verify(playerRepository, times(1)).saveAll(anyList()); // Ensure players were saved once
@@ -93,13 +88,10 @@ class MatchServiceUnitTest {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode matchData = objectMapper.readTree(jsonString);
 
-        // Mock repository behavior to return an existing match
         when(matchRepository.findById(anyLong())).thenReturn(Optional.of(new Match()));
 
-        // Call the service
         boolean result = matchService.saveMatchData(matchData);
 
-        // Verify the results
         assertFalse(result);
         verify(matchRepository, never()).save(any(Match.class));
     }
@@ -117,13 +109,10 @@ class MatchServiceUnitTest {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode matchData = objectMapper.readTree(jsonString);
 
-        // Mock repository behavior
         when(matchRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        // Call the service
         boolean result = matchService.saveMatchData(matchData);
 
-        // Verify the results
         assertTrue(result);
         verify(matchRepository, times(1)).save(any(Match.class));
         verify(teamRepository, times(1)).saveAll(anyList()); // Adjusted to expect one batch save for teams
@@ -131,22 +120,18 @@ class MatchServiceUnitTest {
         verify(officialRepository, times(1)).saveAll(anyList());
         verify(outcomeRepository, times(1)).save(any(Outcome.class));
 
-        // Ensure that parseInnings doesn't attempt to process innings since it's missing
         verify(inningRepository, never()).save(any(Inning.class));
         verify(deliveryRepository, never()).saveAll(anyList());
     }
     @Test
     void testGetMatchEventsByPlayerName() {
-        // Prepare mock data from repository
         List<Object[]> mockData = new ArrayList<>();
         mockData.add(new Object[]{1L, "T20", "Mumbai", "Wankhede Stadium", "IPL 2023", "Team A", "Team B", "bat", "Player X", LocalDate.of(2023, 4, 1)});
         mockData.add(new Object[]{2L, "ODI", "Delhi", "Feroz Shah Kotla", "World Cup", "Team B", "Team C", "field", "Player Y", LocalDate.of(2023, 5, 10)});
 
-        // Mock repository behavior
         String playerName = "Player X";
         when(matchRepository.findMatchEventsByPlayerName(playerName)).thenReturn(mockData);
 
-        // Call the service
         List<Map<String, Object>> result = matchService.getMatchEventsByPlayerName(playerName);
 
         // Assertions
@@ -296,36 +281,28 @@ class MatchServiceUnitTest {
 
     @Test
     void testGetMatchRefereesByMatchNumber() {
-        // Prepare test data
         Long matchNumber = 1L;
         List<Official> mockOfficials = Arrays.asList(new Official(), new Official());
 
-        // Mock repository behavior
         when(officialRepository.findMatchRefereesByMatchNumber(matchNumber)).thenReturn(mockOfficials);
 
-        // Execute the method
         List<Official> result = matchService.getMatchRefereesByMatchNumber(matchNumber);
 
-        // Verify the result
         assertEquals(2, result.size());
     }
 
     @Test
     void testGetTopBatsmen() {
-        // Prepare test data
         Pageable pageable = PageRequest.of(0, 10);
         List<Object[]> mockData = Arrays.asList(
                 new Object[]{"Batsman A", 500},
                 new Object[]{"Batsman B", 450}
         );
 
-        // Mock repository behavior
         when(deliveryRepository.findTopBatsmen(pageable)).thenReturn(mockData);
 
-        // Execute the method
         List<Object[]> result = matchService.getTopBatsmen(pageable);
 
-        // Verify the result
         assertEquals(2, result.size());
         assertEquals("Batsman A", result.get(0)[0]);
         assertEquals(500, result.get(0)[1]);
@@ -333,24 +310,19 @@ class MatchServiceUnitTest {
 
     @Test
     void testGetStrikeRateByBatterAndMatch() {
-        // Prepare test data
         String batterName = "Batsman A";
         int matchNumber = 1;
         Double mockStrikeRate = 150.0;
 
-        // Mock repository behavior
         when(deliveryRepository.getStrikeRateByBatterAndMatch(batterName, matchNumber)).thenReturn(mockStrikeRate);
 
-        // Execute the method
         String result = matchService.getStrikeRateByBatterAndMatch(batterName, matchNumber);
 
-        // Verify the result
         assertTrue(result.contains("150.00"));
     }
 
     @Test
     void testGetTopWicketTakers() {
-        // Prepare test data
         int page = 0;
         int size = 10;
         List<Object[]> mockData = Arrays.asList(
@@ -359,13 +331,10 @@ class MatchServiceUnitTest {
         );
         Page<Object[]> mockPage = new PageImpl<>(mockData);
 
-        // Mock repository behavior
         when(deliveryRepository.findTopWicketTakers(any(Pageable.class))).thenReturn(mockPage);
 
-        // Execute the method
         List<Object[]> result = matchService.getTopWicketTakers(page, size);
 
-        // Verify the result
         assertEquals(2, result.size());
         assertEquals("Bowler A", result.get(0)[0]);
         assertEquals(20, result.get(0)[1]);
