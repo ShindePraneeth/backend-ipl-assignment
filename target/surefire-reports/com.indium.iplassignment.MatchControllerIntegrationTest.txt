@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.indium.iplassignment.MatchControllerIntegrationTest
 -------------------------------------------------------------------------------
-Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.04 s -- in com.indium.iplassignment.MatchControllerIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.15 s -- in com.indium.iplassignment.MatchControllerIntegrationTest

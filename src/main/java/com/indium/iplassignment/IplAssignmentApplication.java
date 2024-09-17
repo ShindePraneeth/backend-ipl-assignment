@@ -5,9 +5,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 
-@SpringBootApplication
-@EnableCaching
 
+
+@SpringBootApplication(scanBasePackages = "com.indium.iplassignment")
+@EnableCaching
 public class IplAssignmentApplication implements CommandLineRunner {
 
 	public static void main(String[] args) {

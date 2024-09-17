@@ -3,8 +3,11 @@ package com.indium.iplassignment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.indium.iplassignment.config.SecurityConfiguration;
 import com.indium.iplassignment.entity.Official;
 import com.indium.iplassignment.entity.Player;
+import com.indium.iplassignment.jwt.JwtRequestFilter;
+import com.indium.iplassignment.jwt.JwtUtil;
 import com.indium.iplassignment.service.MatchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-
+@Import(NoSecurityConfig.class)
 public class MatchControllerIntegrationTest {
 
     @LocalServerPort

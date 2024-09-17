@@ -1,13 +1,11 @@
-
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ipl-assignment
+  name: ipl-assignment-deployment
   labels:
     app: ipl-assignment
 spec:
-  replicas: 2  # Adjusted from 2 to 1
+  replicas: 1
   selector:
     matchLabels:
       app: ipl-assignment
@@ -18,23 +16,24 @@ spec:
     spec:
       containers:
         - name: ipl-assignment
-          image: assignment:1.0
-          ports:
-            - containerPort: 5000
+          image: ipl-assignment:1.0
           env:
             - name: KAFKA_HOST
               value: "host.docker.internal:9094"
             - name: REDIS_HOST
               value: "host.docker.internal"
             - name: MYSQL_URL
-              value: "jdbc:mysql://192.168.1.106:1000/ipl"
+              value: "jdbc:mysql://host.docker.internal:1000/ipl"
+          ports:
+            - containerPort: 5000
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "500m"
+              memory: "512Mi"  # Increased from 128Mi
+              cpu: "500m"      # Increased from 250m
             limits:
-              memory: "512Mi"
-              cpu: "1"
+              memory: "1Gi"   # Increased from 256Mi
+              cpu: "1"        # Increased from 500m
+
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
@@ -44,10 +43,11 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: ipl-assignment
+    name: ipl-assignment-deployment
   minReplicas: 1
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
+
 ---
 apiVersion: v1
 kind: Service
@@ -60,6 +60,4 @@ spec:
   ports:
     - port: 80
       targetPort: 5000
-      nodePort: 30006
-
-
+      nodePort: 30007

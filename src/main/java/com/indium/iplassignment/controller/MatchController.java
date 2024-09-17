@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+//import javax.validation.Valid;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -63,13 +64,12 @@ public class MatchController {
     })
     @PostMapping(value = "/upload", consumes = {"multipart/form-data"})
     public ResponseEntity<String> uploadMatchData(@RequestParam("file") MultipartFile file, Authentication authentication) {
-        try {
-            if (file.isEmpty()) {
-                sendLogToKafka("Upload match data failed", "File is empty");
-                return new ResponseEntity<>("File is empty", HttpStatus.BAD_REQUEST);
-            }
+        if (file == null || file.isEmpty()) {
+            sendLogToKafka("Upload match data failed", "File is empty");
+            return new ResponseEntity<>("File is empty", HttpStatus.BAD_REQUEST);
+        }
 
-            ObjectMapper objectMapper = new ObjectMapper();
+        try {
             JsonNode matchData = objectMapper.readTree(file.getInputStream());
 
             boolean isMatchSaved = matchService.saveMatchData(matchData);
@@ -92,9 +92,12 @@ public class MatchController {
     @Operation(summary = "Get matches by player")
     @ApiResponse(responseCode = "200", description = "List of matches returned")
     @GetMapping("/get-matches-by-player")
-    public ResponseEntity<List<Map<String, Object>>> getMatchesByPlayer(@RequestParam String playerName, Authentication authentication) {
-        List<Map<String, Object>> matchEvents = matchService.getMatchEventsByPlayerName(playerName);
+    public ResponseEntity<List<Map<String, Object>>> getMatchesByPlayer(@RequestParam(required = true) String playerName, Authentication authentication) {
+        if (playerName == null || playerName.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
+        List<Map<String, Object>> matchEvents = matchService.getMatchEventsByPlayerName(playerName);
         sendLogToKafka("Get matches by player", "Player: " + playerName + ", Result count: " + matchEvents.size());
 
         if (matchEvents.isEmpty()) {
@@ -107,8 +110,11 @@ public class MatchController {
     @ApiResponse(responseCode = "200", description = "List of wickets returned")
     @GetMapping("/wickets-by-player")
     public ResponseEntity<List<Map<String, Object>>> getWicketsByPlayer(@RequestParam String playerName, Authentication authentication) {
-        List<Map<String, Object>> wickets = matchService.getWicketsByBowler(playerName);
+        if (playerName == null || playerName.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
+        List<Map<String, Object>> wickets = matchService.getWicketsByBowler(playerName);
         sendLogToKafka("Get wickets by player", "Player: " + playerName + ", Wickets count: " + wickets.size());
 
         return new ResponseEntity<>(wickets, HttpStatus.OK);
@@ -117,15 +123,13 @@ public class MatchController {
     @Operation(summary = "Get cumulative score by player")
     @ApiResponse(responseCode = "200", description = "Cumulative score returned")
     @GetMapping("/cumulative-score-by-player")
-    public ResponseEntity<String> getCumulativeScoreByPlayer(@RequestParam(required = false) String playerName, Authentication authentication) {
+    public ResponseEntity<String> getCumulativeScoreByPlayer(@RequestParam(required = true) String playerName, Authentication authentication) {
         if (playerName == null || playerName.isEmpty()) {
             sendLogToKafka("Get cumulative score by player failed", "Missing required playerName parameter");
             return new ResponseEntity<>("Missing required playerName parameter", HttpStatus.BAD_REQUEST);
         }
 
         Integer cumulativeScore = matchService.getCumulativeScoreByBatter(playerName);
-        cumulativeScore = (cumulativeScore == null) ? 0 : cumulativeScore;
-
         sendLogToKafka("Get cumulative score by player", "Player: " + playerName + ", Cumulative score: " + cumulativeScore);
 
         return new ResponseEntity<>(String.format("Cumulative score for %s is %d", playerName, cumulativeScore), HttpStatus.OK);
@@ -135,8 +139,11 @@ public class MatchController {
     @ApiResponse(responseCode = "200", description = "List of inning scores returned")
     @GetMapping("/inning-scores-by-date")
     public ResponseEntity<List<Map<String, Object>>> getInningScoresByDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate matchDate, Authentication authentication) {
-        List<Map<String, Object>> scores = matchService.getInningScoresByDate(matchDate);
+        if (matchDate == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
+        List<Map<String, Object>> scores = matchService.getInningScoresByDate(matchDate);
         sendLogToKafka("Get inning scores by date", "Match Date: " + matchDate + ", Scores count: " + scores.size());
 
         if (scores.isEmpty()) {
@@ -150,8 +157,11 @@ public class MatchController {
     @ApiResponse(responseCode = "200", description = "List of players returned")
     @GetMapping("/players-by-team-match")
     public ResponseEntity<List<Player>> getPlayersByTeamAndMatch(@RequestParam String teamName, @RequestParam int matchNumber, Authentication authentication) {
-        List<Player> players = matchService.getPlayersByTeamAndMatch(teamName, matchNumber);
+        if (teamName == null || teamName.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
+        List<Player> players = matchService.getPlayersByTeamAndMatch(teamName, matchNumber);
         sendLogToKafka("Get players by team and match", "Team: " + teamName + ", Match Number: " + matchNumber + ", Players count: " + players.size());
 
         if (players.isEmpty()) {
@@ -164,6 +174,10 @@ public class MatchController {
     @ApiResponse(responseCode = "200", description = "List of referee names returned")
     @GetMapping("/match-referees")
     public ResponseEntity<List<String>> getMatchRefereesByMatchNumber(@RequestParam Long matchNumber, Authentication authentication) {
+        if (matchNumber == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         List<Official> matchReferees = matchService.getMatchRefereesByMatchNumber(matchNumber);
         List<String> refereeNames = matchReferees.stream()
                 .map(Official::getOfficialName)
@@ -190,6 +204,10 @@ public class MatchController {
     @ApiResponse(responseCode = "200", description = "Strike rate returned")
     @GetMapping("/strike-rate")
     public ResponseEntity<String> getStrikeRateByBatterAndMatch(@RequestParam String batterName, @RequestParam int matchNumber, Authentication authentication) {
+        if (batterName == null || batterName.isEmpty()) {
+            return new ResponseEntity<>("Batter name is required", HttpStatus.BAD_REQUEST);
+        }
+
         String result = matchService.getStrikeRateByBatterAndMatch(batterName, matchNumber);
 
         if (result.contains("No data found")) {

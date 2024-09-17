@@ -1,10 +1,7 @@
 spring:
   application:
     name: ipl-assignment
-  security:
-#    user:
-#      name: praneeth
-#      password: Praneeth@123
+
   datasource:
     url: jdbc:mysql://localhost:3306/ipl
     username: root
